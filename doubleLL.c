@@ -1,3 +1,5 @@
+// Online C compiler to run C program online
+// Online C compiler to run C program online
 #include <stdio.h>
 #include <stdlib.h>
 struct node
@@ -11,88 +13,104 @@ struct node *getnode()
 {
     struct node *p = (struct node *)malloc(sizeof(struct node));
     return p;
-};
+}
 void insbeg(struct node **start, int x)
 {
-    struct node *p;
-    p = getnode();
-    p->info = x;
-    p->prev = NULL;
-    p->next = *start;
-    if (start != NULL)
-        (*start)->prev = p;
-    *start = p;
+    struct node *newnode;
+    newnode = getnode();
+    newnode->info = x;
+    newnode->prev = NULL;
+    newnode->next = *start;
+    if (*start != NULL)
+        (*start)->prev = newnode;
+    *start = newnode;
+}
+
+void insEnd(struct node **start, int item)
+{
+    struct node *head, *newNode;
+    head = *start;
+    newNode = getnode();
+    newNode->info = item;
+    newNode->prev = NULL;
+    newNode->next = NULL;
+    if (head == NULL)
+    {
+        *start = newNode;
+        newNode->prev = NULL;
+    }
+    else
+    {
+        while (head->next != NULL)
+        {
+            head = head->next;
+        }
+        head->next = (newNode);
+        newNode->prev = head;
+    }
 }
 void insafter(struct node **start, struct node **q, int x)
 {
     struct node *p, *r;
-    p = getnode();
-    r = getnode();
-    p->info = x;
-    if (*start == NULL)
+    if ((*q)->next == NULL)
     {
-        p->next = NULL;
-        p->prev = NULL;
-        *start = p;
+        insEnd(start, x);
     }
     else
     {
-        p->next = (*q)->next;
-        r = p->next;
-        (*q)->next = p;
-        p->prev = *q;
-        r->prev = p;
+        p = getnode();
+        r = getnode();
+        p->info = x;
+        if (*start == NULL)
+        {
+            p->next = NULL;
+            p->prev = NULL;
+            *start = p;
+        }
+        else
+        {
+            r = (*q)->next;
+            p->prev = (*q);
+            p->next = (r);
+            r->prev = p;
+            (*q)->next = p;
+        }
     }
 }
+
 void inBefore(struct node **start, struct node **curr, int x)
 {
     struct node *new, *pre;
-    new = getnode();
-    pre = getnode();
-    new->info = x;
-    if (*start == NULL)
+    if ((*curr)->prev == NULL)
     {
-        new->next = NULL;
-        new->prev = NULL;
-        *start = new;
+        insbeg(start, x);
     }
     else
     {
-        pre = (*curr)->prev;
-        new->prev = (*curr)->prev;
-        (*curr)->prev = new;
-        new->next = (*curr);
-        pre->next = new;
-    }
-}
-void insEnd(struct node **start, int item)
-{
-    struct node *p, *q;
-    p = getnode();
-    q = getnode();
-    q->info = item;
-    q->next = NULL;
-    p = *start;
-    if (p == NULL)
-    {
-        *start = q;
-        q->prev = NULL;
-    }
-    else
-    {
-        while (p->next != NULL)
+        new = getnode();
+        pre = getnode();
+        new->info = x;
+        if (*start == NULL)
         {
-            p = p->next;
+            new->next = NULL;
+            new->prev = NULL;
+            *start = new;
         }
-        p->next = (q);
-        q->prev = p;
+        else
+        {
+            pre = (*curr)->prev;
+            new->prev = (*curr)->prev;
+            (*curr)->prev = new;
+            new->next = (*curr);
+            pre->next = new;
+        }
     }
 }
 void display(struct node *start)
 {
     while (start != NULL)
     {
-        printf("%d->", start->info);
+        printf("%d<->", start->info);
         start = start->next;
     }
     printf("NULL\n");
@@ -115,7 +133,7 @@ int delBig(struct node **start)
     {
         int x = p->info;
         *start = p->next;
-        (*start)->prev= NULL;
+        (*start)->prev = NULL;
 
         free(p);
         return x;
@@ -124,47 +142,88 @@ int delBig(struct node **start)
 
 int delEnd(struct node **start)
 {
-    struct node *p, *q;
-    p = *start;
+    struct node *head, *q;
+    head = *start;
     int item;
-    if (p == NULL)
+    if (head == NULL)
     {
         printf("Void Deletion\n");
     }
-    else if (p->next == NULL)
+    else if (head->next == NULL)
     {
-        *start = p->next;
-        free(p);
+        *start = head->next;
+        free(head);
     }
     else
     {
-        while (p->next != NULL)
+        while (head->next != NULL)
         {
-            q = p;
-            p = p->next;
+            q = head;
+            head = head->next;
         }
         q->next = NULL;
-        item = p->info;
-        free(p);
+        item = head->info;
+        free(head);
         return item;
     }
 }
-
-int delAfter(struct node *q)
+int delbefore(struct node *node)
 {
-    if (q == NULL || q->next == NULL)
+    if (node->prev == NULL || node == NULL)
     {
-        printf("\nvoid deletion");
+        printf("void deletion\n");
         return -1;
     }
-    struct node *p, *r;
-    p = q->next;
-    r = p->next;
-    q->next = r;
-    r->prev = q;
-    int x = p->info;
-    free(p);
-    return x;
+    else if (node->prev->prev == NULL)
+    {
+        struct node *p, *r;
+        p = node->prev->prev;
+        r = node->prev;
+        node->prev = p;
+        printf("deleted node is %d\n", r);
+        free(r);
+    }
+    else
+    {
+        struct node *p, *r;
+        p = node->prev;
+        r = p->prev;
+        r->next = node;
+        node->prev = r;
+        int x = p->info;
+        printf("deleted node is %d\n", p);
+        free(p);
+        return x;
+    }
+}
+int delAfter(struct node *node)
+{
+    if (node == NULL || node->next == NULL)
+    {
+        printf("void deletion\n");
+        return -1;
+    }
+    else if (node->next->next == NULL)
+    {
+        struct node *p, *r;
+        r = node->next;
+        p = r->next;
+        node->next = p;
+        printf("deleted node is %d\n", r);
+        free(r);
+    }
+    else
+    {
+        struct node *p, *r;
+        p = node->next;
+        r = p->next;
+        node->next = r;
+        r->prev = node;
+        int x = p->info;
+        printf("deleted node is %d\n", p);
+        free(p);
+        return x;
+    }
 }
 int countnode(struct node *start)
 {
@@ -204,58 +263,143 @@ int countnode(struct node *start)
 //         *start = r;
 //     }
 // }
+struct node *address(struct node *start, int x)
+{
+    struct node *p = NULL;
+    struct node *q;
+    p = start;
+    do
+    {
+        if (p->info == x)
+        {
+            q = p;
+            break;
+        }
+        p = p->next;
+    } while (p->next != start);
+    return p;
+}
 
 int main()
 {
-    struct node *start = NULL, *p, *q;
-    insEnd(&start, 0);
-    insbeg(&start, 3);
-    insbeg(&start, 1);
-    insbeg(&start, 9);
-    insbeg(&start, 16);
-    insbeg(&start, 8);
-    insbeg(&start, 2);
-    insbeg(&start, 11);
-    display(start);
-    printf("\nitem deleted %d\n", delBig(&start));
-    display(start);
-    int x = 9;
-    {
-        p = start;
-        while (p != NULL)
-        {
-            if (p->info == x)
-            {
-                q = p;
-                break;
-            }
-            p = p->next;
-        }
-        printf("\nitem deleyted %d\n", delAfter(q));
-    }
-    display(start);
-    int y = 9;
-    {
-        p = start;
-        while (p != NULL)
-        {
-            if (p->info == y)
-            {
-                q = p;
-                break;
-            }
-            p = p->next;
-        }
-     insafter(&start,&q,10);
-     inBefore(&start,&q,10);
-    }
-    printf("\nafter insertion\n");
-    display(start);
-       printf("\nitem deleted %d\n", delEnd(&start));
-    display(start);
-    printf("\n%d nodes are present\n", countnode(start));
-    // reverse(&start);
-    // display(start);
+    int choice, x, c, y, m = 0;
+    struct node *start = NULL;
+    struct node *q;
+    struct node *p;
+    struct node *addres;
 
+    while (1)
+    {
+        printf("1. Insert Element at begining\n");
+        printf("2. Insert Element at End\n");
+        printf("3. Insert Element after given node\n");
+        printf("4. Insert Element before given node\n");
+        printf("5. Delete Element from begining\n");
+        printf("6. Delete Element from end\n");
+        printf("7. Delete Element after given node\n");
+        printf("8. Delete Element before given node\n");
+        printf("9. display Doubly Linked list\n");
+        printf("10. find count of nodes in LL\n");
+        printf("11.quit\n");
+        printf("Enter your choice:\n");
+        scanf("%d", &choice);
+        switch (choice)
+        {
+        case 1:
+            printf("enter the data\n");
+            scanf("%d", &x);
+            insbeg(&start, x);
+            break;
+        case 2:
+            printf("enter the data\n");
+            scanf("%d", &x);
+            insEnd(&start, x);
+            break;
+        case 3:
+            printf("enter the data to after \n");
+            scanf("%d", &x);
+            addres = address(start, x);
+            if (p == NULL)
+            {
+                printf("node not found\n");
+                break;
+            }
+            else
+            {
+                printf("ENTER DATA\n");
+                scanf("%d", &y);
+                insafter(&start, &addres, y);
+                display(start);
+                break;
+            }
+        case 4:
+            printf("enter the data to after \n");
+            scanf("%d", &x);
+            addres = address(start, x);
+            if (p == NULL)
+            {
+                printf("node not found\n");
+                break;
+            }
+            else
+            {
+                printf("ENTER DATA\n");
+                scanf("%d", &y);
+                inBefore(&start, &addres, y);
+                display(start);
+                break;
+            }
+
+        case 5:
+            x = delBig(&start);
+            printf("deleted data is %d\n", x);
+            break;
+        case 6:
+            x = delEnd(&start);
+            printf("deleted data is %d\n", x);
+            break;
+        case 7:
+            printf("enter the data to delete next node\n");
+            scanf("%d", &x);
+            addres = address(start, x);
+            if (addres == NULL)
+            {
+                printf("node not found\n");
+                break;
+            }
+            else
+            {
+                delAfter(addres);
+                break;
+            }
+        case 8:
+            printf("enter the data to delete before node\n");
+            scanf("%d", &x);
+            addres = address(start, x);
+            if (addres == NULL)
+            {
+                printf("node not found\n");
+                break;
+            }
+            else
+            {
+                delbefore(addres);
+                break;
+            }
+
+        case 9:
+            display(start);
+            break;
+        case 10:
+            c = countnode(start);
+            printf("number of nodes are: %d", c);
+            break;
+        case 11:
+            exit(0);
+        default:
+            printf("invalid choice\n");
+            break;
+        }
+    }
     return 0;
 }
